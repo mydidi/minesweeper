@@ -1,3 +1,5 @@
+
+
 const canvas    = document.querySelector('#game');
 const game      = canvas.getContext('2d');
 const btnUp     = document.querySelector('#up');
@@ -54,6 +56,13 @@ btnDown.addEventListener("click", moveDown);
 btnBegin.addEventListener("click", clearGame);
 window.addEventListener("keydown",moveByKeys);
 
+function roundToTwo(num) {
+    var x = Math.ceil(num * 100)/100; 
+    return (x);
+}
+function generateRandomInteger(min, max) {
+    return Math.floor(min + Math.random()*(max - min + 1))
+  }
 function startTimer() {
     timeStart = Date.now();
 	currentTimer = setInterval( () => {
@@ -65,10 +74,7 @@ function showTime(){
     // Mostramos el tiempo en segundos
     spanTime.innerHTML = ((Date.now() - timeStart)/1000).toFixed(1);
 }
-function roundToTwo(num) {
-    var x = Math.ceil(num * 100)/100; 
-    return (x);
-}
+
 function showRecord(){
     const recordTime = localStorage.getItem('record');
     if (recordTime)
@@ -105,9 +111,9 @@ function gameWin()
     //timeStart = undefined;
     showRecord();
     if (lives==0)
-    renderSetEmoji(mapsLevel[0],emojis['BOMB_COLLISION']);
+    renderSetEmoji(mapsLevel[0],emojis['BOMB_COLLISION'],false);
     else
-    renderSetEmoji(mapsLevel[0],emojis['WIN']);
+    renderSetEmoji(mapsLevel[0],emojis['WIN'],false);
 }
 function showLives() 
 {
@@ -120,8 +126,8 @@ function levelFail()
 {
     lives --;
     
-    timerId =   setTimeout(gameLose, 1000); 
-    setTimeout(() => { clearInterval(timerId); startGame();  game.fillText(emojis['PLAYER'], playerPos.x, playerPos.y);  }, 4000);
+    timerId =   setTimeout(gameLose, 70); 
+    setTimeout(() => { clearInterval(timerId); startGame();  game.fillText(emojis['PLAYER'], playerPos.x, playerPos.y);  }, 700);
     errorPos[playerPos.c + '-' + playerPos.r]=true;
     
     if (lives<0)
@@ -132,7 +138,7 @@ function levelFail()
         
     }
    
-   console.log("levelFail");
+   //console.log("levelFail");
   
     playerPos.x =undefined;
     playerPos.y =undefined;
@@ -194,7 +200,7 @@ function moveRight() {
         playerPos.x += elementsSize;
         playerPos.setColumn(playerPos.c+1);
         movePlayer();
-        console.log(canvasSize);
+        //console.log(canvasSize);
     }
    
   //console.log("Me movere hacia dere");
@@ -287,7 +293,7 @@ function clearGame()
 }
 function gameLose()
 {
-    renderSetEmoji(maps[level],emojis['BOMB_ERROR']);
+    renderSetEmoji(maps[level],emojis['BOMB_ERROR'],true);
     //console.log("Gave over");
 }
 function startGame()
@@ -368,7 +374,7 @@ function startGame()
    
 }
 
-function renderSetEmoji(map,emoji)
+function renderSetEmoji(map,emoji,ifRamdom)
 {
    
 
@@ -378,11 +384,22 @@ function renderSetEmoji(map,emoji)
     const mapRowCol = mapRow.map(row => row.trim().split(''));
     game.clearRect(0,0,canvasSize,canvasSize);
     mapRowCol.forEach((row,rowIndex )=> {
+        let ramdom =  generateRandomInteger(0,9);
             row.forEach((col,colIndex )=> {
                 let posX = roundToTwo( elementsSize * (colIndex + 1));
                 let posY = roundToTwo( elementsSize * (rowIndex + 1));
+                let my_emoji=emoji;
+                if (ifRamdom)
+                {                  
+                    if (ramdom >0)
+                    {
+                        my_emoji= emojis['X'];
+                        ramdom =ramdom-1;
+                    }
+                         
+                }                    
                 if(col=='0'  || col=='X')
-                  game.fillText(emoji,posX ,posY);
+                  game.fillText( my_emoji,posX ,posY);
                 else if(col=='U')
                 game.fillText(emojis['PLAYER'],posX ,posY);
              });
